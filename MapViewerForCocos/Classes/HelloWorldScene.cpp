@@ -1,10 +1,16 @@
 #include "HelloWorldScene.h"
 #include "cocostudio/CocoStudio.h"
 #include "ui/CocosGUI.h"
+#include <iostream>
+#include <fstream>
 
+using namespace std;
 USING_NS_CC;
-
 using namespace cocostudio::timeline;
+
+//マップサイズ
+
+
 
 Scene* HelloWorld::createScene()
 {
@@ -23,60 +29,7 @@ Scene* HelloWorld::createScene()
 
 // on "init" you need to initialize your instance
 bool HelloWorld::init()
-{
-    /**  you can create scene with following comment code instead of using csb file.
-    // 1. super init first
-    if ( !Layer::init() )
-    {
-        return false;
-    }
-    
-    Size visibleSize = Director::getInstance()->getVisibleSize();
-    Vec2 origin = Director::getInstance()->getVisibleOrigin();
-
-    /////////////////////////////
-    // 2. add a menu item with "X" image, which is clicked to quit the program
-    //    you may modify it.
-
-    // add a "close" icon to exit the progress. it's an autorelease object
-    auto closeItem = MenuItemImage::create(
-                                           "CloseNormal.png",
-                                           "CloseSelected.png",
-                                           CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
-    
-	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width/2 ,
-                                origin.y + closeItem->getContentSize().height/2));
-
-    // create menu, it's an autorelease object
-    auto menu = Menu::create(closeItem, NULL);
-    menu->setPosition(Vec2::ZERO);
-    this->addChild(menu, 1);
-
-    /////////////////////////////
-    // 3. add your codes below...
-
-    // add a label shows "Hello World"
-    // create and initialize a label
-    
-    auto label = Label::createWithTTF("Hello World", "fonts/Marker Felt.ttf", 24);
-    
-    // position the label on the center of the screen
-    label->setPosition(Vec2(origin.x + visibleSize.width/2,
-                            origin.y + visibleSize.height - label->getContentSize().height));
-
-    // add the label as a child to this layer
-    this->addChild(label, 1);
-
-    // add "HelloWorld" splash screen"
-    auto sprite = Sprite::create("HelloWorld.png");
-
-    // position the sprite on the center of the screen
-    sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
-
-    // add the sprite as a child to this layer
-    this->addChild(sprite, 0);
-    **/
-    
+{    
     //////////////////////////////
     // 1. super init first
     if ( !Layer::init() )
@@ -90,25 +43,25 @@ bool HelloWorld::init()
 
 
 	//	cocos2d テスト画像を表示
-    auto rootNode = CSLoader::createNode("MainScene.csb");
+    //auto rootNode = CSLoader::createNode("MainScene.csb");
 
-    addChild(rootNode);
+    //addChild(rootNode);
 
+	//	csv 読み込み
+	ReadingDate("test1.csv");
 
-	
-	for (int i = 0; i < 30; i++)
+	//	マップチップの設定
+	for (int h = 0; h < 20; h++)
 	{
-		for (int j = 0; j < 20; j++)
+		for (int w = 0; w < 30; w++)
 		{
-			testChip.SetType(1);
+			testChip.SetType(m_Map[h][w]);
 			testChip.SetImage();
 			this->addChild(testChip.GetSprite());
 			testChip.GetSprite()->setAnchorPoint(Vec2(0, 0));
-			testChip.GetSprite()->setPosition(Vec2(i * 32, j * 32));
+			testChip.GetSprite()->setPosition(Vec2(w * 32, h * 32));
 		}
 	}
-
-
 
     return true;
 }
@@ -127,5 +80,42 @@ void HelloWorld::update(float delta)
 /// </summary>
 void HelloWorld::DrawMap()
 {
+
+}
+
+/// <summary>
+/// csv読み込み
+/// </summary>
+/// <param name="fileName"></param>
+void HelloWorld::ReadingDate(string fileName)
+{
+	ifstream ifs(fileName);
+	string str;
+	int i;
+
+	//読めなかったとき
+	if (!ifs)
+	{
+		for (i = 0; i < MAX_TIP; i++)
+		{
+			m_Map[i / MAP_WIDTH][i % MAP_WIDTH] = 0;
+		}
+		return;
+	}
+
+	i = 0;
+	while (getline(ifs, str))
+	{
+		string token;
+		istringstream stream(str);
+		//1行のうち、文字列とコンマを分解する
+		while (getline(stream, token, ','))
+		{
+			//すべて文字列として読み込まれるため
+			//数値は変換が必要
+			m_Map[i / MAP_WIDTH][i % MAP_WIDTH] = atoi(token.c_str());
+			i++;
+		}
+	}
 
 }

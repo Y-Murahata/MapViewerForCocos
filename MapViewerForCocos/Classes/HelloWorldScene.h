@@ -4,6 +4,10 @@
 #include "cocos2d.h"
 #include "Chip.h"
 
+const int MAP_WIDTH = 30;
+const int MAP_HEIGHT = 20;
+const int MAX_TIP = MAP_WIDTH * MAP_HEIGHT;
+
 class HelloWorld : public cocos2d::Layer
 {
 public:
@@ -16,9 +20,14 @@ public:
 	void update(float delta)override;
 	//	マップを描画する
 	void DrawMap();
+	//	読み込み
+	void ReadingDate(std::string fileName);
 
 	//	マップチップ
 	Chip testChip;
+
+	//	マップ
+	unsigned __int8  m_Map[MAP_HEIGHT][MAP_WIDTH];	//マップ
 
 
 
