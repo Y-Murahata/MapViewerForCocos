@@ -84,9 +84,48 @@ bool HelloWorld::init()
         return false;
     }
     
+
+	//	update関数の登録
+	this->scheduleUpdate();
+
+
+	//	cocos2d テスト画像を表示
     auto rootNode = CSLoader::createNode("MainScene.csb");
 
     addChild(rootNode);
 
+
+	
+	for (int i = 0; i < 30; i++)
+	{
+		for (int j = 0; j < 20; j++)
+		{
+			testChip.SetType(1);
+			testChip.SetImage();
+			this->addChild(testChip.GetSprite());
+			testChip.GetSprite()->setAnchorPoint(Vec2(0, 0));
+			testChip.GetSprite()->setPosition(Vec2(i * 32, j * 32));
+		}
+	}
+
+
+
     return true;
+}
+
+/// <summary>
+/// 更新処理
+/// </summary>
+void HelloWorld::update(float delta)
+{
+
+}
+
+/// <summary>
+///	読み込んだマップチップを表示する
+/// 30 x 20 のマップ
+/// </summary>
+void HelloWorld::DrawMap()
+{
+
 }
