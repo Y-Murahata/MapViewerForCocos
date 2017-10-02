@@ -8,7 +8,6 @@ using namespace std;
 USING_NS_CC;
 using namespace cocostudio::timeline;
 
-//マップサイズ
 
 
 
@@ -69,26 +68,38 @@ bool HelloWorld::init()
 	{
 		for (int w = 0; w < 30; w++)
 		{
-			testChip[h][w].SetType(m_Map[h][w]);
-			testChip[h][w].SetImage();
-			this->addChild(testChip[h][w].GetSprite());
-			testChip[h][w].GetSprite()->setAnchorPoint(Vec2(0, 0));
-			testChip[h][w].GetSprite()->setPosition(Vec2(w * 32, h * 32));
+			m_Chip[h][w].SetType(m_Map[h][w]);
+			m_Chip[h][w].SetImage();
+			this->addChild(m_Chip[h][w].GetSprite());
+			m_Chip[h][w].GetSprite()->setAnchorPoint(Vec2(0, 0));
+			m_Chip[h][w].GetSprite()->setPosition(Vec2(w * 32, h * 32));
 		}
 	}
 
-	Sprite* testSprite = Sprite::create("linkedin.png");
-	addChild(testSprite);
+	//	履歴情報を初期化
+	for (int h = 0; h < MAP_HEIGHT; h++)
+	{
+		for (int w = 0; w < MAP_WIDTH; w++)
+		{
+			m_ReturnRecord[h][w] = m_Map[h][w];
+			m_BackRecord[h][w] = m_Map[h][w];
+		}
+	}
 
-	Rect rect = testSprite->getBoundingBox();
 
 	// UIを作成する
 	CreateUI();
 
+	//	選択ツールの初期化
+	m_selectedTools = TOOLS::PENCIL;
+	//	カメラのズレ分の座標を初期化
+	m_CameraShiftPos = Vec2(0, 0);
+
+
 	//	デバック文字
-	debugtext = Label::createWithSystemFont("NoClick!", "Arial", 48);
-	debugtext->setPosition(Point(300, 200));
-	this->addChild(debugtext);
+	//debugtext = Label::createWithSystemFont("NoClick!", "Arial", 48);
+	//debugtext->setPosition(Point(300, 200));
+	//this->addChild(debugtext);
 
     return true;
 }
@@ -101,22 +112,66 @@ void HelloWorld::update(float delta)
 	//	カメラの更新
 	CameraUpdate();
 
-	{//	各種ボタン処理
-		//	土ボタンが押された状況
+	//	各種ボタン処理
+	{
+		//	チップボタンが押された
 		if (m_pButtonDirt->isHighlighted())
 		{
 			m_selectedChipType = 0;
 		}
-		if (m_pButtonTree->isHighlighted())
+		if (m_pButtonGrass->isHighlighted())
 		{
 			m_selectedChipType = 1;
 		}
+		if (m_pButtonSeed->isHighlighted())
+		{
+			m_selectedChipType = 2;
+		}
+		if (m_pButtonForest->isHighlighted())
+		{
+			m_selectedChipType = 3;
+		}
+		if (m_pButtonMountain->isHighlighted())
+		{
+			m_selectedChipType = 4;
+		}
+		if (m_pButtonDeset->isHighlighted())
+		{
+			m_selectedChipType = 5;
+		}
+		//	セーブボタン
 		if (m_pButtonSave->isHighlighted())
 		{
-			reverse(testChip, MAP_WIDTH, MAP_HEIGHT);	//	マップチップの上下をひっくり返す
+			reverse(m_Chip, MAP_WIDTH, MAP_HEIGHT);	//	マップチップの上下をひっくり返す
 			OutPutCsv();							//	csv形式で書き出す
-			reverse(testChip, MAP_WIDTH, MAP_HEIGHT);	//	マップチップの上下をひっくり返す
+			reverse(m_Chip, MAP_WIDTH, MAP_HEIGHT);	//	マップチップの上下をひっくり返す
+		}
+		//	戻るボタン
+		if (m_pButtonBack->isHighlighted())
+		{
+			//	全てのマップチップに履歴を上書きする
+			for (int h = 0; h < MAP_HEIGHT; h++)
+			{
+				for (int w = 0; w < MAP_WIDTH; w++)
+				{
+					//	チップ画像を入れ替える
+					m_Chip[h][w].ChengeImage(m_BackRecord[h][w]);
+				}
+			}
+		}
 
+		//	やり直しボタン
+		if (m_pButtonReturn->isHighlighted())
+		{
+			//	全てのマップチップに履歴を上書きする
+			for (int h = 0; h < MAP_HEIGHT; h++)
+			{
+				for (int w = 0; w < MAP_WIDTH; w++)
+				{
+					//	チップ画像を入れ替える
+					m_Chip[h][w].ChengeImage(m_ReturnRecord[h][w]);
+				}
+			}
 		}
 	}
 
@@ -126,18 +181,19 @@ void HelloWorld::update(float delta)
 	{
 		for (int w = 0; w < 30; w++)
 		{
-			testChip[h][w].Update(m_selectedChipType,m_mouse.GetClick(),m_mouse.GetPosition());
+			m_Chip[h][w].Update(m_selectedChipType,m_mouse.GetClick(),m_mouse.GetPosition());
 		}
 	}
 
-	if (m_mouse.GetClick())
-	{
-		debugtext->setString("ClickNow");
-	}
-	else
-	{
-		debugtext->setString("NoClick!");
-	}
+	//	デバック表示
+	//if (m_mouse.GetClick())
+	//{
+	//	debugtext->setString("ClickNow");
+	//}
+	//else
+	//{
+	//	debugtext->setString("NoClick!");
+	//}
 
 	
 
@@ -210,6 +266,17 @@ void HelloWorld::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
 	case EventKeyboard::KeyCode::KEY_S:
 		m_keyS = true;
 		break;
+	case EventKeyboard::KeyCode::KEY_Z:
+		//	全てのマップチップに履歴を上書きする
+		for (int h = 0; h < MAP_HEIGHT; h++)
+		{
+			for (int w = 0; w < MAP_WIDTH; w++)
+			{
+				//	チップ画像を入れ替える
+				m_Chip[h][w].ChengeImage(m_BackRecord[h][w]);
+			}
+		}
+		break;
 	}
 	m_pCamera->setPosition(cameraPos);
 }
@@ -254,8 +321,20 @@ void HelloWorld::onKeyReleased(EventKeyboard::KeyCode keyCode, Event * event)
 /// <returns></returns>
 bool HelloWorld::onTouchBegan(Touch * touch, Event * unused_event)
 {
+	//	最新のマップの状態を保存する
+	for (int h = 0; h < MAP_HEIGHT; h++)
+	{
+		for (int w = 0; w < MAP_WIDTH; w++)
+		{
+			m_BackRecord[h][w] = m_Chip[h][w].GetType();
+		}
+	}
+
+
 	//	タッチ座標を取得
 	Vec2 touch_pos = touch->getLocation();
+	//	カメラがズレてる分タッチ座標をずらす
+	touch_pos += m_CameraShiftPos;
 	//	仮想マウスに座標を渡す
 	m_mouse.SetPositon(touch_pos);
 	//	仮想マウスのクリック状態をオン
@@ -267,13 +346,20 @@ bool HelloWorld::onTouchBegan(Touch * touch, Event * unused_event)
 		for (int w = 0; w < 30; w++)
 		{
 			//	マップチップの当たり判定を取得
-			Rect boxRect = testChip[h][w].GetSprite()->getBoundingBox();
+			Rect boxRect = m_Chip[h][w].GetSprite()->getBoundingBox();
 			//	ヒットしているか判定
 			bool hit = boxRect.containsPoint(touch_pos);
 			//	ヒットしていたら
 			if (hit)
 			{
-				testChip[h][w].ChengeImage(m_selectedChipType);
+				switch (m_selectedChipType)
+				{
+				case TOOLS::PENCIL:
+					m_Chip[h][w].ChengeImage(m_selectedChipType);
+					break;
+				case TOOLS::SQUARE:
+					break;
+				}
 			}
 		}
 	}
@@ -292,6 +378,8 @@ void HelloWorld::onTouchMoved(Touch * touch, Event * unused_event)
 {
 	//	タッチ座標を取得
 	Vec2 touch_pos = touch->getLocation();
+	//	カメラがズレてる分タッチ座標をずらす
+	touch_pos += m_CameraShiftPos;
 	//	仮想マウスに座標を渡す
 	m_mouse.SetPositon(touch_pos);
 	//	仮想マウスのクリック状態をオン
@@ -310,11 +398,22 @@ void HelloWorld::onTouchEnded(Touch * touch, Event * unused_event)
 {
 	//	タッチ座標を取得
 	Vec2 touch_pos = touch->getLocation();
+	//	カメラがズレてる分タッチ座標をずらす
+	touch_pos += m_CameraShiftPos;
 	//	仮想マウスに座標を渡す
 	m_mouse.SetPositon(touch_pos);
 	//	仮想マウスのクリック状態をオン
 	m_mouse.SetClick(false);
 
+
+	//	最新のマップの状態を保存する
+	for (int h = 0; h < MAP_HEIGHT; h++)
+	{
+		for (int w = 0; w < MAP_WIDTH; w++)
+		{
+			m_ReturnRecord[h][w] = m_Chip[h][w].GetType();
+		}
+	}
 
 }
 
@@ -390,7 +489,7 @@ void HelloWorld::OutPutCsv()
 			int num = i*j;
 
 			//ofs << (int)m_Map[i][j] << ",";
-			ofs << testChip[i][j].GetType() << ",";
+			ofs << m_Chip[i][j].GetType() << ",";
 
 
 		}
@@ -423,16 +522,46 @@ void HelloWorld::CreateUI()
 	m_pButtonDirt->setPosition(Vec2(910, 600));
 	m_pButtonDirt->setCameraMask((unsigned short)CameraFlag::USER1);
 	this->addChild(m_pButtonDirt);
+	//	はらっぱ
+	m_pButtonGrass = ui::Button::create("GrassIcon.png");
+	m_pButtonGrass->setPosition(Vec2(910, 500));
+	m_pButtonGrass->setCameraMask((unsigned short)CameraFlag::USER1);
+	this->addChild(m_pButtonGrass);
 	//	草
-	m_pButtonTree = ui::Button::create("TreeIcon.png");
-	m_pButtonTree->setPosition(Vec2(910, 500));
-	m_pButtonTree->setCameraMask((unsigned short)CameraFlag::USER1);
-	this->addChild(m_pButtonTree);
+	m_pButtonSeed = ui::Button::create("TreeIcon.png");
+	m_pButtonSeed->setPosition(Vec2(910, 400));
+	m_pButtonSeed->setCameraMask((unsigned short)CameraFlag::USER1);
+	this->addChild(m_pButtonSeed);
+	//	森
+	m_pButtonForest = ui::Button::create("ForestIcon.png");
+	m_pButtonForest->setPosition(Vec2(910, 300));
+	m_pButtonForest->setCameraMask((unsigned short)CameraFlag::USER1);
+	this->addChild(m_pButtonForest);
+	//	山
+	m_pButtonMountain = ui::Button::create("MountainIcon.png");
+	m_pButtonMountain->setPosition(Vec2(910, 200));
+	m_pButtonMountain->setCameraMask((unsigned short)CameraFlag::USER1);
+	this->addChild(m_pButtonMountain);
+	//	砂
+	m_pButtonDeset = ui::Button::create("DesertIcon.png");
+	m_pButtonDeset->setPosition(Vec2(910, 100));
+	m_pButtonDeset->setCameraMask((unsigned short)CameraFlag::USER1);
+	this->addChild(m_pButtonDeset);
 	//	セーブ
 	m_pButtonSave = ui::Button::create("saveButton.png");
-	m_pButtonSave->setPosition(Vec2(910, 32));
+	m_pButtonSave->setPosition(Vec2(48 / 2 + 48 * 2, 640 - 48 / 2));
 	m_pButtonSave->setCameraMask((unsigned short)CameraFlag::USER1);
 	this->addChild(m_pButtonSave);
+	//	戻る
+	m_pButtonBack = ui::Button::create("BackButton.png");
+	m_pButtonBack->setPosition(Vec2(48/2, 640-48/2));
+	m_pButtonBack->setCameraMask((unsigned short)CameraFlag::USER1);
+	this->addChild(m_pButtonBack);
+	//	やり直し
+	m_pButtonReturn = ui::Button::create("ReturnButton.png");
+	m_pButtonReturn->setPosition(Vec2(48 / 2 + 48, 640 - 48 / 2));
+	m_pButtonReturn->setCameraMask((unsigned short)CameraFlag::USER1);
+	this->addChild(m_pButtonReturn);
 
 
 
@@ -453,18 +582,22 @@ void HelloWorld::CameraUpdate()
 	if (m_keyA)
 	{
 		cameraPos.x = cameraPos.x - 3;
+		m_CameraShiftPos.x += -3;
 	}
 	if (m_keyD)
 	{
 		cameraPos.x = cameraPos.x + 3;
+		m_CameraShiftPos.x += 3;
 	}
 	if (m_keyW)
 	{
-		cameraPos.x = cameraPos.x + 3;
+		cameraPos.y = cameraPos.y + 3;
+		m_CameraShiftPos.y += 3;
 	}
 	if (m_keyS)
 	{
-		cameraPos.x = cameraPos.x + 3;
+		cameraPos.y = cameraPos.y - 3;
+		m_CameraShiftPos.y += -3;
 	}
 	m_pCamera->setPosition(cameraPos);
 }

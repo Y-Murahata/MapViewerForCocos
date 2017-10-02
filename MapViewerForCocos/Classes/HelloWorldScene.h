@@ -6,9 +6,12 @@
 #include "Chip.h"
 #include "Mouse.h"
 
+//マップサイズ
 const int MAP_WIDTH = 30;
 const int MAP_HEIGHT = 20;
 const int MAX_TIP = MAP_WIDTH * MAP_HEIGHT;
+
+
 
 class HelloWorld : public cocos2d::Layer
 {
@@ -38,24 +41,38 @@ public:
 
 
 	//	変数==============
-	Chip testChip[MAP_HEIGHT][MAP_WIDTH];	//	マップチップ
+	Chip m_Chip[MAP_HEIGHT][MAP_WIDTH];	//	マップチップ
 	bool m_keyD;	//	Dキー
 	bool m_keyA;	//	Aキー
 	bool m_keyW;	//	Wキー
 	bool m_keyS;	//	Sキー
 
 	int m_selectedChipType;	//	現在選択されているチップタイプ
+	int m_selectedTools;	//	現在選択されているツール
 
+	cocos2d::Vec2 m_CameraShiftPos;
 	cocos2d::Camera* m_pCamera;
 	cocos2d::Sprite* m_pMenu;
 
-	//	マップ
-	int  m_Map[MAP_HEIGHT][MAP_WIDTH];	//マップ
+	//	ツール
+	
+
+	//	マップ関連
+	int  m_Map[MAP_HEIGHT][MAP_WIDTH];	// マップ
+	int m_ReturnRecord[MAP_HEIGHT][MAP_WIDTH];// 入力履歴
+	int m_BackRecord[MAP_HEIGHT][MAP_WIDTH];// 入力履歴
 
 	//	ボタンの作成
-	cocos2d::ui::Button* m_pButtonDirt;
-	cocos2d::ui::Button* m_pButtonTree;
-	cocos2d::ui::Button* m_pButtonSave;
+	cocos2d::ui::Button* m_pButtonDirt;	//	土
+	cocos2d::ui::Button* m_pButtonGrass;	//	原っぱ
+	cocos2d::ui::Button* m_pButtonSeed;	//	草
+	cocos2d::ui::Button* m_pButtonForest;	//	森
+	cocos2d::ui::Button* m_pButtonMountain;	//	山
+	cocos2d::ui::Button* m_pButtonDeset;	//	砂
+	cocos2d::ui::Button* m_pButtonSave;	//	セーブ
+	cocos2d::ui::Button* m_pButtonBack;	//	戻る
+	cocos2d::ui::Button* m_pButtonReturn;	//	やり直し
+
 
 	//	仮想マウス
 	Mouse m_mouse;

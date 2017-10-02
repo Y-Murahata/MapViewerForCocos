@@ -37,20 +37,21 @@ void Chip::SetImage()
 	switch (m_type)
 	{
 	case 0:
-		//m_image = Sprite::create("facebook.png");
 		m_image = Sprite::create("Dirt.png");
 		break;
 	case 1:
-		//m_image = Sprite::create("twitter_32.png");
-		m_image = Sprite::create("Seed.png");
+		m_image = Sprite::create("Grass.png");
 		break;
 	case 2:
-		//m_image = Sprite::create("google.png");
-		m_image = Sprite::create("google.png");
+		m_image = Sprite::create("Seed.png");
 		break;
 	case 3:
-		//m_image = Sprite::create("linkedin.png");
-		m_image = Sprite::create("linkedin.png");
+		m_image = Sprite::create("Forest.png");
+		break;
+	case 4:
+		m_image = Sprite::create("Mountain.png");
+	case 5:
+		m_image = Sprite::create("Desert.png");
 		break;
 	}
 }
@@ -69,13 +70,19 @@ void Chip::ChengeImage(int chipType)
 			m_image->setTexture("Dirt.png");
 			break;
 		case 1:
-			m_image->setTexture("Seed.png");
+			m_image->setTexture("Grass.png");
 			break;
 		case 2:
-			m_image->setTexture("google.png");
+			m_image->setTexture("Seed.png");
 			break;
 		case 3:
-			m_image->setTexture("linkedin.png");
+			m_image->setTexture("Forest.png");
+			break;
+		case 4:
+			m_image->setTexture("Mountain.png");
+			break;
+		case 5:
+			m_image->setTexture("Desert.png");
 			break;
 		}
 
