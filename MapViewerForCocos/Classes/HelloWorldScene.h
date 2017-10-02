@@ -4,6 +4,7 @@
 #include "cocos2d.h"
 #include "ui/CocosGUI.h"
 #include "Chip.h"
+#include "Mouse.h"
 
 const int MAP_WIDTH = 30;
 const int MAP_HEIGHT = 20;
@@ -18,20 +19,22 @@ public:
     // Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
 	//	関数==============
     virtual bool init();	
-	//	アップデート関数
-	void update(float delta)override;
-	//	マップを描画する
-	void DrawMap();
-	//	読み込み
-	void ReadingDate(std::string fileName);
+	void update(float delta)override;													//	アップデート関数
+	void ReadingDate(std::string fileName);												//	読み込み
 
-	void onKeyPressed(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event);
-	void onKeyReleased(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event);
-	void reverse(Chip array[][MAP_WIDTH], int w, int h);
-	void reverse(int array[][MAP_WIDTH], int w, int h);
-	void OutPutCsv();
-	void CreateUI();
-	void CameraUpdate();
+	void onKeyPressed(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event);	//	キーボードが押された時
+	void onKeyReleased(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event);	//	キーボードが離された時
+
+	bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* unused_event);
+	void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* unused_event);
+	void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* unused_event);
+	void onTouchCancelled(cocos2d::Touch* touch, cocos2d::Event* unused_event);
+
+	void reverse(Chip array[][MAP_WIDTH], int w, int h);								//	投げた配列の順序を逆にする（Chip）
+	void reverse(int array[][MAP_WIDTH], int w, int h);									//	投げた配列の順序を逆にする（int）
+	void OutPutCsv();																	//	csv形式で吐き出す
+	void CreateUI();																	//	UI関係の作成
+	void CameraUpdate();																//	メインカメラのアプデート
 
 
 	//	変数==============
@@ -54,9 +57,11 @@ public:
 	cocos2d::ui::Button* m_pButtonTree;
 	cocos2d::ui::Button* m_pButtonSave;
 
+	//	仮想マウス
+	Mouse m_mouse;
 
-
-
+	//	デバック情報
+	cocos2d::Label* debugtext;
 
     // implement the "static create()" method manually
     CREATE_FUNC(HelloWorld);

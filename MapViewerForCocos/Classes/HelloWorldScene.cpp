@@ -1,5 +1,6 @@
 #include "HelloWorldScene.h"
 #include "cocostudio/CocoStudio.h"
+#include "EventListenerGesture.h"
 #include <iostream>
 #include <fstream>
 
@@ -41,12 +42,21 @@ bool HelloWorld::init()
 	this->scheduleUpdate();
 
 	//	イベントリスナーを作成
-	EventListenerKeyboard* listener = EventListenerKeyboard::create();
+	EventListenerKeyboard* keyBoardListener = EventListenerKeyboard::create();		//	キーボードリスナー
+	EventListenerTouchOneByOne* tapListener = EventListenerTouchOneByOne::create();				//	タップリスナー
 	//	コールバック関数をセット
-	listener->onKeyPressed = CC_CALLBACK_2(HelloWorld::onKeyPressed, this);
-	listener->onKeyReleased = CC_CALLBACK_2(HelloWorld::onKeyReleased, this);
+	//	キーボード
+	keyBoardListener->onKeyPressed = CC_CALLBACK_2(HelloWorld::onKeyPressed, this);
+	keyBoardListener->onKeyReleased = CC_CALLBACK_2(HelloWorld::onKeyReleased, this);
+	//	タップ
+	tapListener->onTouchBegan = CC_CALLBACK_2(HelloWorld::onTouchBegan, this);
+	tapListener->onTouchMoved = CC_CALLBACK_2(HelloWorld::onTouchMoved, this);
+	tapListener->onTouchEnded = CC_CALLBACK_2(HelloWorld::onTouchEnded, this);
+	tapListener->onTouchCancelled = CC_CALLBACK_2(HelloWorld::onTouchCancelled, this);
 	//	イベントリスナーを登録
-	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
+	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(keyBoardListener, this);
+	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(tapListener, this);
+
 
 	//	csv 読み込み
 	ReadingDate("test.csv");
@@ -67,9 +77,18 @@ bool HelloWorld::init()
 		}
 	}
 
+	Sprite* testSprite = Sprite::create("linkedin.png");
+	addChild(testSprite);
+
+	Rect rect = testSprite->getBoundingBox();
 
 	// UIを作成する
 	CreateUI();
+
+	//	デバック文字
+	debugtext = Label::createWithSystemFont("NoClick!", "Arial", 48);
+	debugtext->setPosition(Point(300, 200));
+	this->addChild(debugtext);
 
     return true;
 }
@@ -107,21 +126,22 @@ void HelloWorld::update(float delta)
 	{
 		for (int w = 0; w < 30; w++)
 		{
-			testChip[h][w].Update(m_selectedChipType);
+			testChip[h][w].Update(m_selectedChipType,m_mouse.GetClick(),m_mouse.GetPosition());
 		}
 	}
 
+	if (m_mouse.GetClick())
+	{
+		debugtext->setString("ClickNow");
+	}
+	else
+	{
+		debugtext->setString("NoClick!");
+	}
 
 	
-}
 
-/// <summary>
-///	読み込んだマップチップを表示する
-/// 30 x 20 のマップ
-/// </summary>
-void HelloWorld::DrawMap()
-{
-
+	
 }
 
 /// <summary>
@@ -199,7 +219,7 @@ void HelloWorld::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
 /// </summary>
 /// <param name="keyCode"></param>
 /// <param name="event"></param>
-void HelloWorld::onKeyReleased(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event * event)
+void HelloWorld::onKeyReleased(EventKeyboard::KeyCode keyCode, Event * event)
 {
 
 	//if (keyCode == EventKeyboard::KeyCode::KEY_D)
@@ -227,6 +247,97 @@ void HelloWorld::onKeyReleased(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d:
 }
 
 /// <summary>
+/// タッチされた時（クリックされた時）
+/// </summary>
+/// <param name="touch"></param>
+/// <param name="unused_event"></param>
+/// <returns></returns>
+bool HelloWorld::onTouchBegan(Touch * touch, Event * unused_event)
+{
+	//	タッチ座標を取得
+	Vec2 touch_pos = touch->getLocation();
+	//	仮想マウスに座標を渡す
+	m_mouse.SetPositon(touch_pos);
+	//	仮想マウスのクリック状態をオン
+	m_mouse.SetClick(true);
+
+	//	タッチしたところがマップチップ上
+	for (int h = 0; h < 20; h++)
+	{
+		for (int w = 0; w < 30; w++)
+		{
+			//	マップチップの当たり判定を取得
+			Rect boxRect = testChip[h][w].GetSprite()->getBoundingBox();
+			//	ヒットしているか判定
+			bool hit = boxRect.containsPoint(touch_pos);
+			//	ヒットしていたら
+			if (hit)
+			{
+				testChip[h][w].ChengeImage(m_selectedChipType);
+			}
+		}
+	}
+
+
+	return true;
+}
+
+/// <summary>
+/// 押しつづけている状態
+/// </summary>
+/// <param name="touch"></param>
+/// <param name="unused_event"></param>
+/// <returns></returns>
+void HelloWorld::onTouchMoved(Touch * touch, Event * unused_event)
+{
+	//	タッチ座標を取得
+	Vec2 touch_pos = touch->getLocation();
+	//	仮想マウスに座標を渡す
+	m_mouse.SetPositon(touch_pos);
+	//	仮想マウスのクリック状態をオン
+	m_mouse.SetClick(true);
+
+
+}
+
+/// <summary>
+///	タッチ終了
+/// </summary>
+/// <param name="touch"></param>
+/// <param name="unused_event"></param>
+/// <returns></returns>
+void HelloWorld::onTouchEnded(Touch * touch, Event * unused_event)
+{
+	//	タッチ座標を取得
+	Vec2 touch_pos = touch->getLocation();
+	//	仮想マウスに座標を渡す
+	m_mouse.SetPositon(touch_pos);
+	//	仮想マウスのクリック状態をオン
+	m_mouse.SetClick(false);
+
+
+}
+
+
+/// <summary>
+///	タッチキャンセル
+/// </summary>
+/// <param name="touch"></param>
+/// <param name="unused_event"></param>
+/// <returns></returns>
+void HelloWorld::onTouchCancelled(Touch * touch, Event * unused_event)
+{
+	//	タッチ座標を取得
+	Vec2 touch_pos = touch->getLocation();
+	//	仮想マウスに座標を渡す
+	m_mouse.SetPositon(touch_pos);
+	//	仮想マウスのクリック状態をオン
+	m_mouse.SetClick(false);
+
+
+}
+
+/// <summary>
 /// ２次元配列array[y][x]のyを逆順にする
 /// </summary>
 /// <param name="array"></param>
@@ -234,7 +345,6 @@ void HelloWorld::onKeyReleased(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d:
 /// <param name="h"></param>
 void HelloWorld::reverse(Chip array[][MAP_WIDTH], int w, int h)
 {
-	int i, j;
 	Chip temp;
 
 	for (int i = 0, j= h -1; i < j; i++,j--)
@@ -251,7 +361,6 @@ void HelloWorld::reverse(Chip array[][MAP_WIDTH], int w, int h)
 
 void HelloWorld::reverse(int array[][MAP_WIDTH], int w, int h)
 {
-	int i, j;
 	int temp;
 
 	for (int i = 0, j = h - 1; i < j; i++, j--)
