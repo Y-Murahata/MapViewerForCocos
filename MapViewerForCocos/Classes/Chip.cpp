@@ -12,20 +12,25 @@ Chip::~Chip()
 {
 }
 
-void Chip::Update(int chipType,bool isClick, Vec2 mousePos)
+void Chip::Update(int chipType,bool isClick, Vec2 mousePos, int selectedTool)
 {
 	//	クリックされている時
 	if (isClick == true)
 	{
-		//	マップチップの当たり判定を取得
-		Rect boxRect = m_image->getBoundingBox();
-		//	ヒットしているか判定
-		bool hit = boxRect.containsPoint(mousePos);
-		//	ヒットしていたら
-		if (hit)
+		//	鉛筆ツールのとき
+		if (selectedTool == TOOLS::PENCIL)
 		{
-			ChengeImage(chipType);
+			//	マップチップの当たり判定を取得
+			Rect boxRect = m_image->getBoundingBox();
+			//	ヒットしているか判定
+			bool hit = boxRect.containsPoint(mousePos);
+			//	ヒットしていたら
+			if (hit)
+			{
+				ChengeImage(chipType);
+			}
 		}
+		
 	}
 }
 

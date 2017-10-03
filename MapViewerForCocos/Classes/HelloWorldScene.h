@@ -5,10 +5,9 @@
 #include "ui/CocosGUI.h"
 #include "Chip.h"
 #include "Mouse.h"
+#include "SquareTool.h"
 
 //マップサイズ
-const int MAP_WIDTH = 30;
-const int MAP_HEIGHT = 20;
 const int MAX_TIP = MAP_WIDTH * MAP_HEIGHT;
 
 
@@ -46,16 +45,18 @@ public:
 	bool m_keyA;	//	Aキー
 	bool m_keyW;	//	Wキー
 	bool m_keyS;	//	Sキー
+	bool m_keyUp;	//	↑キー
+	bool m_keyDown;//	↓キー
+
 
 	int m_selectedChipType;	//	現在選択されているチップタイプ
 	int m_selectedTools;	//	現在選択されているツール
 
-	cocos2d::Vec2 m_CameraShiftPos;
-	cocos2d::Camera* m_pCamera;
-	cocos2d::Sprite* m_pMenu;
+	cocos2d::Vec2 m_CameraShiftPos;	//	カメラのずれた分の座標
+	cocos2d::Camera* m_pCamera;		//	UI用カメラ
+	cocos2d::Sprite* m_pMenu;		//	メニューバー用画像
+	cocos2d::Sprite* m_pSelectIcon;		//	選択してますアイコン用画像
 
-	//	ツール
-	
 
 	//	マップ関連
 	int  m_Map[MAP_HEIGHT][MAP_WIDTH];	// マップ
@@ -72,10 +73,15 @@ public:
 	cocos2d::ui::Button* m_pButtonSave;	//	セーブ
 	cocos2d::ui::Button* m_pButtonBack;	//	戻る
 	cocos2d::ui::Button* m_pButtonReturn;	//	やり直し
+	cocos2d::ui::Button* m_pButtonPen;		//	ペン
+	cocos2d::ui::Button* m_pButtonSquare;	//	四角
+
 
 
 	//	仮想マウス
 	Mouse m_mouse;
+	//	四角形ツール
+	SquareTool m_squareTool;
 
 	//	デバック情報
 	cocos2d::Label* debugtext;

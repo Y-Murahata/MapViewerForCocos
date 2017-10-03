@@ -16,7 +16,7 @@ public:
 	Chip();		//　コンストラクタ
 	~Chip();	//	デストラクタ
 
-	void Update(int chipType , bool isClick, cocos2d::Vec2 mousePos);
+	void Update(int chipType , bool isClick, cocos2d::Vec2 mousePos,int selectedTool);
 
 	//	getter
 	cocos2d::Sprite* GetSprite() { return m_image; }

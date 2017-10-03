@@ -58,7 +58,7 @@ bool HelloWorld::init()
 
 
 	//	csv 読み込み
-	ReadingDate("test.csv");
+	ReadingDate("basic.csv");
 
 	//	cocos2d-xは縦の表示が逆になる
 	reverse(m_Map, MAP_WIDTH, MAP_HEIGHT);
@@ -91,7 +91,7 @@ bool HelloWorld::init()
 	CreateUI();
 
 	//	選択ツールの初期化
-	m_selectedTools = TOOLS::PENCIL;
+	m_selectedTools = TOOLS::SQUARE;
 	//	カメラのズレ分の座標を初期化
 	m_CameraShiftPos = Vec2(0, 0);
 
@@ -118,26 +118,44 @@ void HelloWorld::update(float delta)
 		if (m_pButtonDirt->isHighlighted())
 		{
 			m_selectedChipType = 0;
+			Vec2 pos = m_pButtonDirt->getPosition();
+			pos = Vec2(pos.x - 2, pos.y -2);
+			m_pSelectIcon->setPosition(pos);
 		}
 		if (m_pButtonGrass->isHighlighted())
 		{
 			m_selectedChipType = 1;
+			Vec2 pos = m_pButtonGrass->getPosition();
+			pos = Vec2(pos.x - 2, pos.y - 2);
+			m_pSelectIcon->setPosition(pos);
 		}
 		if (m_pButtonSeed->isHighlighted())
 		{
 			m_selectedChipType = 2;
+			Vec2 pos = m_pButtonSeed->getPosition();
+			pos = Vec2(pos.x - 2, pos.y - 2);
+			m_pSelectIcon->setPosition(pos);
 		}
 		if (m_pButtonForest->isHighlighted())
 		{
 			m_selectedChipType = 3;
+			Vec2 pos = m_pButtonForest->getPosition();
+			pos = Vec2(pos.x - 2, pos.y - 2);
+			m_pSelectIcon->setPosition(pos);
 		}
 		if (m_pButtonMountain->isHighlighted())
 		{
 			m_selectedChipType = 4;
+			Vec2 pos = m_pButtonMountain->getPosition();
+			pos = Vec2(pos.x - 2, pos.y - 2);
+			m_pSelectIcon->setPosition(pos);
 		}
 		if (m_pButtonDeset->isHighlighted())
 		{
 			m_selectedChipType = 5;
+			Vec2 pos = m_pButtonDeset->getPosition();
+			pos = Vec2(pos.x - 2, pos.y - 2);
+			m_pSelectIcon->setPosition(pos);
 		}
 		//	セーブボタン
 		if (m_pButtonSave->isHighlighted())
@@ -173,15 +191,26 @@ void HelloWorld::update(float delta)
 				}
 			}
 		}
+
+		//	ペンボタン
+		if (m_pButtonPen->isHighlighted())
+		{
+			m_selectedTools = TOOLS::PENCIL;
+		}
+		//	四角ボタン
+		if (m_pButtonSquare->isHighlighted())
+		{
+			m_selectedTools = TOOLS::SQUARE;
+		}
 	}
 
 
-	//	マップチップの更新
+	//	マップチップの4
 	for (int h = 0; h < 20; h++)
 	{
 		for (int w = 0; w < 30; w++)
 		{
-			m_Chip[h][w].Update(m_selectedChipType,m_mouse.GetClick(),m_mouse.GetPosition());
+			m_Chip[h][w].Update(m_selectedChipType,m_mouse.GetClick(),m_mouse.GetPosition(),m_selectedTools);
 		}
 	}
 
@@ -265,6 +294,24 @@ void HelloWorld::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
 		break;
 	case EventKeyboard::KeyCode::KEY_S:
 		m_keyS = true;
+		break;
+	case EventKeyboard::KeyCode::KEY_UP_ARROW:
+		if (m_selectedChipType>0)
+		{
+			m_selectedChipType -= 1;
+			Vec2 pos = m_pSelectIcon->getPosition();
+			pos = Vec2(pos.x,pos.y + 100);
+			m_pSelectIcon->setPosition(pos);
+		}
+		break;
+	case EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+		if (m_selectedChipType < 5)
+		{
+			m_selectedChipType += 1;
+			Vec2 pos = m_pSelectIcon->getPosition();
+			pos = Vec2(pos.x, pos.y - 100);
+			m_pSelectIcon->setPosition(pos);
+		}
 		break;
 	case EventKeyboard::KeyCode::KEY_Z:
 		//	全てのマップチップに履歴を上書きする
@@ -352,12 +399,13 @@ bool HelloWorld::onTouchBegan(Touch * touch, Event * unused_event)
 			//	ヒットしていたら
 			if (hit)
 			{
-				switch (m_selectedChipType)
+				switch (m_selectedTools)
 				{
-				case TOOLS::PENCIL:
+				case TOOLS::PENCIL:	//	鉛筆ツールの時
 					m_Chip[h][w].ChengeImage(m_selectedChipType);
 					break;
-				case TOOLS::SQUARE:
+				case TOOLS::SQUARE:	//	四角形ツールの時
+					m_squareTool.SetStart(w,h);
 					break;
 				}
 			}
@@ -405,16 +453,42 @@ void HelloWorld::onTouchEnded(Touch * touch, Event * unused_event)
 	//	仮想マウスのクリック状態をオン
 	m_mouse.SetClick(false);
 
-
-	//	最新のマップの状態を保存する
-	for (int h = 0; h < MAP_HEIGHT; h++)
+	if (m_selectedTools == TOOLS::SQUARE)
 	{
-		for (int w = 0; w < MAP_WIDTH; w++)
+		for (int h = 0; h < MAP_HEIGHT; h++)
 		{
-			m_ReturnRecord[h][w] = m_Chip[h][w].GetType();
-		}
-	}
+			for (int w = 0; w < MAP_WIDTH; w++)
+			{
+				//	マップチップの当たり判定を取得
+				Rect boxRect = m_Chip[h][w].GetSprite()->getBoundingBox();
+				//	ヒットしているか判定
+				bool hit = boxRect.containsPoint(m_mouse.GetPosition());
+				//	ヒットしていたら
+				if (hit)
+				{
+					m_squareTool.SetEnd(w, h);
+					m_squareTool.ChengeSelectedRange(m_Chip, m_selectedChipType);
+				}
+			}
 
+
+		}
+
+
+
+
+
+
+		//	最新のマップの状態を保存する
+		for (int h = 0; h < MAP_HEIGHT; h++)
+		{
+			for (int w = 0; w < MAP_WIDTH; w++)
+			{
+				m_ReturnRecord[h][w] = m_Chip[h][w].GetType();
+			}
+		}
+
+	}
 }
 
 
@@ -520,31 +594,37 @@ void HelloWorld::CreateUI()
 	//	土
 	m_pButtonDirt = ui::Button::create("DirtIcon.png");
 	m_pButtonDirt->setPosition(Vec2(910, 600));
+	m_pButtonDirt->setZoomScale(0);
 	m_pButtonDirt->setCameraMask((unsigned short)CameraFlag::USER1);
 	this->addChild(m_pButtonDirt);
 	//	はらっぱ
 	m_pButtonGrass = ui::Button::create("GrassIcon.png");
 	m_pButtonGrass->setPosition(Vec2(910, 500));
+	m_pButtonGrass->setZoomScale(0);
 	m_pButtonGrass->setCameraMask((unsigned short)CameraFlag::USER1);
 	this->addChild(m_pButtonGrass);
 	//	草
 	m_pButtonSeed = ui::Button::create("TreeIcon.png");
 	m_pButtonSeed->setPosition(Vec2(910, 400));
+	m_pButtonSeed->setZoomScale(0);
 	m_pButtonSeed->setCameraMask((unsigned short)CameraFlag::USER1);
 	this->addChild(m_pButtonSeed);
 	//	森
 	m_pButtonForest = ui::Button::create("ForestIcon.png");
 	m_pButtonForest->setPosition(Vec2(910, 300));
+	m_pButtonForest->setZoomScale(0);
 	m_pButtonForest->setCameraMask((unsigned short)CameraFlag::USER1);
 	this->addChild(m_pButtonForest);
 	//	山
 	m_pButtonMountain = ui::Button::create("MountainIcon.png");
 	m_pButtonMountain->setPosition(Vec2(910, 200));
+	m_pButtonMountain->setZoomScale(0);
 	m_pButtonMountain->setCameraMask((unsigned short)CameraFlag::USER1);
 	this->addChild(m_pButtonMountain);
 	//	砂
 	m_pButtonDeset = ui::Button::create("DesertIcon.png");
 	m_pButtonDeset->setPosition(Vec2(910, 100));
+	m_pButtonDeset->setZoomScale(0);
 	m_pButtonDeset->setCameraMask((unsigned short)CameraFlag::USER1);
 	this->addChild(m_pButtonDeset);
 	//	セーブ
@@ -562,6 +642,21 @@ void HelloWorld::CreateUI()
 	m_pButtonReturn->setPosition(Vec2(48 / 2 + 48, 640 - 48 / 2));
 	m_pButtonReturn->setCameraMask((unsigned short)CameraFlag::USER1);
 	this->addChild(m_pButtonReturn);
+	//	ペン
+	m_pButtonPen = ui::Button::create("PenButton.png");
+	m_pButtonPen->setPosition(Vec2(48 / 2 + 48*3, 640 - 48 / 2));
+	m_pButtonPen->setCameraMask((unsigned short)CameraFlag::USER1);
+	this->addChild(m_pButtonPen);
+	//	四角
+	m_pButtonSquare = ui::Button::create("SquareButton.png");
+	m_pButtonSquare->setPosition(Vec2(48 / 2 + 48*4, 640 - 48 / 2));
+	m_pButtonSquare->setCameraMask((unsigned short)CameraFlag::USER1);
+	this->addChild(m_pButtonSquare);
+	//	選択中アイコン
+	m_pSelectIcon = Sprite::create("SelectIcon.png");
+	m_pSelectIcon->setPosition(Vec2(908,600-2));
+	m_pSelectIcon->setCameraMask((unsigned short)CameraFlag::USER1);
+	this->addChild(m_pSelectIcon);
 
 
 
